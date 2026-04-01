@@ -24,7 +24,7 @@ namespace Lab17.ViewModels
 
         public MainViewModel()
         {
-            LoadDirectory(CurrentPath);
+            LoadDrives();
         }
 
         private void AddParentDirectory(string path)
@@ -138,6 +138,13 @@ namespace Lab17.ViewModels
         {
             if (SelectedItem == null) return;
 
+            if(SelectedItem.Name == ".." &&
+                string.IsNullOrEmpty(Directory.GetParent(CurrentPath)?.FullName))
+            {
+                LoadDrives();
+                return;
+            }
+
             if (SelectedItem.IsDirectory)
             {
                 LoadDirectory(SelectedItem.FullPath);
@@ -160,7 +167,13 @@ namespace Lab17.ViewModels
 
         partial void OnCurrentPathChanged(string value)
         {
-            if (!string.IsNullOrEmpty(value) && Directory.Exists(value))
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                LoadDrives();
+                return;
+            }
+
+            if (Directory.Exists(value))
             {
                 LoadDirectory(value);
             }
@@ -276,6 +289,56 @@ namespace Lab17.ViewModels
             catch (Exception ex)
             {
                 MessageBox.Show($"Ошибка при сжатии: {ex.Message}");
+            }
+        }
+
+        public void LoadDrives()
+        {
+            Items.Clear();
+            _currentPath = "";
+            OnPropertyChanged(nameof(CurrentPath));
+
+            foreach (var drive in DriveInfo.GetDrives())
+            {
+                if(!drive.IsReady) continue;
+
+                double totalSize = drive.TotalSize;
+                double freeSpace = drive.TotalFreeSpace;
+                double percent = ((totalSize - freeSpace) / totalSize) * 100;
+
+                Items.Add(new FileItem
+                {
+                    Name = $"{drive.Name} ({drive.VolumeLabel})",
+                    FullPath = drive.Name,
+                    DateModified = DateTime.MinValue,
+                    Size = $"{FormatSize(drive.TotalFreeSpace)} своб. из {FormatSize(drive.TotalSize)}",
+                    IsDirectory = true,
+                    Icon = new BitmapImage(new Uri("pack://application:,,,/Resources/drive.png")),
+                    IsDrive = true,
+                    PercentUsed = percent
+                });
+            }
+        }
+
+        [RelayCommand]
+        public void ShowProperties()
+        {
+            if(SelectedItem == null || SelectedItem.Name == "..") return;
+
+            if (SelectedItem.IsDrive)
+            {
+                var driveInfo = new DriveInfo(SelectedItem.FullPath);
+                new DrivePropertiesWindow(driveInfo)
+                {
+                    Owner = Application.Current.MainWindow
+                }.ShowDialog();
+            }
+            else if ( SelectedItem.IsDirectory)
+            {
+                new FolderPropertiesWindow(SelectedItem.FullPath)
+                {
+                    Owner = Application.Current.MainWindow
+                }.ShowDialog();
             }
         }
     }

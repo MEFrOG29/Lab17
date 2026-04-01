@@ -6,6 +6,9 @@
     <Window.DataContext>
         <local:MainViewModel/>
     </Window.DataContext>
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    </Window.Resources>
 
     <DockPanel>
         <Menu DockPanel.Dock="Top">
@@ -21,7 +24,8 @@
         <ListView ItemsSource="{Binding Items}" 
                   SelectedItem="{Binding SelectedItem}" 
                   MouseDoubleClick="ListView_MouseDoubleClick"
-                  Margin="5">
+                  Margin="5"
+                  Background="DarkGray">
             <ListView.ContextMenu>
                 <ContextMenu>
                     <MenuItem Header="Копировать" 
@@ -32,6 +36,8 @@
                   Command="{Binding CompressItemCommand}" />
                     <MenuItem Header="Извлечь из архива"
                   Command="{Binding DecompressItemCommand}" />
+                    <MenuItem Header="Свойства" 
+                  Command="{Binding ShowPropertiesCommand}" FontWeight="Bold"/>
                 </ContextMenu>
             </ListView.ContextMenu>
             <ListView.ItemContainerStyle>
@@ -49,9 +55,23 @@
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
-                    <GridViewColumn Header="Имя" DisplayMemberBinding="{Binding Name}" Width="250"/>
+                    <GridViewColumn Header="Имя" DisplayMemberBinding="{Binding Name}" Width="200"/>
+                    <GridViewColumn Header="Занятость" Width="150">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid Visibility="{Binding IsDrive, Converter={StaticResource BoolToVis}}">
+                                    <ProgressBar Value="{Binding PercentUsed}"
+                             Height="12"
+                             Minimum="0"
+                             Maximum="100"
+                             Foreground="Green"
+                             Background="White"/>
+                                </Grid>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
                     <GridViewColumn Header="Дата изменения" DisplayMemberBinding="{Binding DateModified, StringFormat='dd.MM.yyyy HH:mm'}" Width="150"/>
-                    <GridViewColumn Header="Размер" DisplayMemberBinding="{Binding Size}" Width="80"/>
+                    <GridViewColumn Header="Размер" DisplayMemberBinding="{Binding Size}" Width="150"/>
                 </GridView>
             </ListView.View>
         </ListView>

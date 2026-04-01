@@ -4,11 +4,14 @@ namespace Lab17.Models
 {
     public class FileItem
     {
-        public string Name { get; set; }
-        public string FullPath { get; set; }
+        public string? Name { get; set; }
+        public string? FullPath { get; set; }
         public DateTime DateModified { get; set; }
-        public string Size { get; set; }
+        public string? Size { get; set; }
         public bool IsDirectory { get; set; }
-        public ImageSource Icon { get; set; }
+        public ImageSource? Icon { get; set; }
+        public bool IsDrive { get; set; }
+        public double PercentUsed { get; set; }
+
     }
 }
